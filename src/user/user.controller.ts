@@ -3,12 +3,12 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PermissionGuard } from 'src/auth/permission/permission.guard';
-import { JwtAuthGuard } from 'src/auth/jwt/jwt.auth.guard';
-import { hasPermissions } from 'src/auth/permission/permission.decorator';
-import { Permission } from 'src/auth/permission/permission.enum';
-import { Observable } from 'rxjs';
-import { User } from './entities/user.entity';
+// import { PermissionGuard } from 'src/auth/permission/permission.guard';
+// import { JwtAuthGuard } from 'src/auth/jwt/jwt.auth.guard';
+// import { hasPermissions } from 'src/auth/permission/permission.decorator';
+// import { Permission } from 'src/auth/permission/permission.enum';
+// import { Observable } from 'rxjs';
+// import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -26,9 +26,9 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({summary: "Get All User"})
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(PermissionGuard)
-  @hasPermissions(Permission.Can_Manage_Product)
+  // @UseGuards(JwtAuthGuard)
+  // @UseGuards(PermissionGuard)
+  // @hasPermissions(Permission.Can_Manage_Product)
   findAll() {
     return this.userService.findAll();
   }
