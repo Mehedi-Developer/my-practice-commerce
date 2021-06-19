@@ -20,7 +20,12 @@ import { AuthModule } from './auth/auth.module';
     database: 'my-practice_commerce',
     entities: [Permission, Role, User],
     synchronize: true,
-  }), UserModule, RoleModule, PermissionModule, AuthModule],
+  }),
+   UserModule, 
+   RoleModule, 
+   PermissionModule, 
+   AuthModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

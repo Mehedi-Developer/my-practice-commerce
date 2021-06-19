@@ -1,9 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { PermissionGuard } from 'src/auth/permission/permission.guard';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.auth.guard';
+import { hasPermissions } from 'src/auth/permission/permission.decorator';
+import { Permission } from 'src/auth/permission/permission.enum';
+import { Observable } from 'rxjs';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -18,8 +23,12 @@ export class UserController {
   }
   
   @ApiTags("User")
+  @ApiBearerAuth()
   @ApiOperation({summary: "Get All User"})
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(PermissionGuard)
+  @hasPermissions(Permission.Can_Manage_Product)
   findAll() {
     return this.userService.findAll();
   }

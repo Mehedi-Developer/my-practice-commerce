@@ -114,7 +114,7 @@ export class UserService {
                         .orderBy("user.id")
                         .getMany();
 
-    console.log(users)
+    // console.log(users)
     // return this.userRepository.find();
     return users;
   }
