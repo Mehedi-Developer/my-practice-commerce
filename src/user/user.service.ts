@@ -153,25 +153,20 @@ export class UserService {
 
   async update(id: number, upUser: UpdateUserDto) {
     try{
-      const user = await this.userRepository
-                         .createQueryBuilder("user")
-                         .select(["user"])
-                         .where({id})
-                         .getOne();
+      const user = await this.userRepository.findOne(id);
+      if(!user){
+        throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND);
+      }
 
       const userObj = new User();
-      // const hashPassword = await bcrypt.hashSync( user.password, 10);
       upUser.name && (userObj.name = upUser.name);
       upUser.email && (userObj.email = upUser.email);
-      const saltRound = 10; 
-      const hashPassword = upUser.password && ( await bcrypt.hashSync( user.password, saltRound));
+
+      const hashPassword = upUser.password && ( await bcrypt.hashSync( upUser.password, 10));
+
       upUser.password && (userObj.password = hashPassword);
       upUser.roleId && (userObj.role =  await this.roleService.findRoleById(id));
-
-      console.log("Update User ==== ", userObj)
-      if(!user){
-        throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND)
-      }
+      
       // string (password) ==> $2b$10$TfDBFQvPZ2MdngYRqNrsK.vNSZTrIU8BRgaiyP.cyEITv0nPCHSuu
       // 12345  (password) ==> $2b$10$waQLnVT3SsK0cGY9uRz6huqMb0JPRtnvwA9Znre0K1AIppyl.S6Xe
       return this.userRepository.update(id, userObj);

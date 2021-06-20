@@ -35,14 +35,14 @@ export class PermissionsGuard implements CanActivate {
         // console.log("user.id ==== ", user?.id);
         const role = myUser?.role;
         // console.log("role === ", role)
-        const userPermissions = await this.roleService.findPermissionsByRoleId(role?.id);
-        console.log("userPermissions ==== ", userPermissions);
+        const userRolePermissions = await this.roleService.findPermissionsByRoleId(role?.id);
+        console.log("userRolePermissions ==== ", userRolePermissions);
         const flag = requiredPermissions.map( (reqPermission) => {
-            return userPermissions?.permission.find( userPermission =>{
-                return userPermission.name === reqPermission;
+            return userRolePermissions?.permission.find( userRolePermission =>{
+                return userRolePermission.name === reqPermission;
             }) ? true : false;
         })
-        // const flag = userPermission?.permission.find((p) => {
+        // const flag = userRolePermission?.permission.find((p) => {
         //     return p.name === requiredPermissions[0];
         // });
         console.log("flag ", flag);

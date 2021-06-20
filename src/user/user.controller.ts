@@ -7,9 +7,6 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 import { PermissionsGuard } from 'src/auth/permission.guard';
 import { hasPermissions } from 'src/auth/permission.decorator';
 import { Permission } from 'src/auth/permission.enum';
-// import { PermissionGuard } from 'src/auth/permission/permission.guard';
-// import { hasPermissions } from 'src/auth/permission/permission.decorator';
-// import { Permission } from 'src/auth/permission/permission.enum';
 // import { Observable } from 'rxjs';
 // import { User } from './entities/user.entity';
 
@@ -34,7 +31,7 @@ export class UserController {
   @UseGuards(PermissionsGuard)
   // Local E JwtAuthGuard Use Korle Obshsoi PermissionsGuard Er Por Use Korte Hobe Onnothay Global E Korle Problem Nai
   // @UseGuards(JwtAuthGuard)
-  @hasPermissions(Permission.Can_Response_Customer)
+  @hasPermissions(Permission.Can_Manage_Product)
   findAll() {
     return this.userService.findAll();
   }
@@ -43,6 +40,8 @@ export class UserController {
   @ApiOperation({summary: "Get A User By Id"})
   @Get(':id')
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @hasPermissions(Permission.Can_Response_Staff)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
