@@ -24,6 +24,15 @@ export class UserService {
 
   ){}
 
+  async findRoleForUserId(roleId: number){
+    const user_role = await this.userRepository
+                      .createQueryBuilder("user")
+                      .innerJoin("user.role", "role")
+                      .select(["user.id","user.name", "user.mobile", "user.email", "role"])
+                      .where("role.id = "+ roleId)
+                      .getOne();
+    return user_role;
+  }
   async logIn(@Body() body: LoginDto){
     // Authentication Token Should Be Found Here, InshaAllah...
     const { email, password } = body;
@@ -37,8 +46,9 @@ export class UserService {
   async findUserByEmail(email: string){
     const userByEmail =  await this.userRepository
     .createQueryBuilder("user")
+    .innerJoin("user.role", "role")
     // .select(["user"])
-    .select(["user"])
+    .select(["user","role"])
     .where({email})
     // .orWhere("user.mobile = :mobile ", {mobile})
     .getOne();
@@ -91,6 +101,7 @@ export class UserService {
       userObj.mobile = mobile;
       userObj.password = hashPassword;
 
+      // const roleById = await this.roleService.findOne(roleId);
       const roleById = await this.roleService.findRoleById(roleId);
 
       // console.log({roleById});
@@ -140,7 +151,7 @@ export class UserService {
     // return this.userRepository.findOne(id);
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, upUser: UpdateUserDto) {
     try{
       const user = await this.userRepository
                          .createQueryBuilder("user")
@@ -148,10 +159,22 @@ export class UserService {
                          .where({id})
                          .getOne();
 
+      const userObj = new User();
+      // const hashPassword = await bcrypt.hashSync( user.password, 10);
+      upUser.name && (userObj.name = upUser.name);
+      upUser.email && (userObj.email = upUser.email);
+      const saltRound = 10; 
+      const hashPassword = upUser.password && ( await bcrypt.hashSync( user.password, saltRound));
+      upUser.password && (userObj.password = hashPassword);
+      upUser.roleId && (userObj.role =  await this.roleService.findRoleById(id));
+
+      console.log("Update User ==== ", userObj)
       if(!user){
         throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND)
       }
-      return this.userRepository.update(id, updateUserDto);
+      // string (password) ==> $2b$10$TfDBFQvPZ2MdngYRqNrsK.vNSZTrIU8BRgaiyP.cyEITv0nPCHSuu
+      // 12345  (password) ==> $2b$10$waQLnVT3SsK0cGY9uRz6huqMb0JPRtnvwA9Znre0K1AIppyl.S6Xe
+      return this.userRepository.update(id, userObj);
     }
     catch(err){
       throw new HttpException(err.message, err.status);

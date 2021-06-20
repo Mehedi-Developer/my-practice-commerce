@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PermissionService } from 'src/permission/permission.service';
 import { Repository } from 'typeorm';
@@ -25,6 +25,22 @@ export class RoleService {
     // console.log({roleObj})
     roleObj.permission = rolePermission;
     return this.roleRepository.save(roleObj);
+  }
+
+  async findPermissionsByRoleId(roleId: number){
+    if(roleId){
+      // console.log('roleId', roleId);
+      const permissionsByRoleId = await this.roleRepository
+                                        .createQueryBuilder("role")
+                                        .leftJoinAndSelect('role.permission',"per")
+                                        .where("role.id = :roleId ",{roleId})
+                                        .getOne();
+      // console.log('permissionsByRoleId===',permissionsByRoleId);
+      // console.log('permissionsByRoleId===',permissionsByRoleId?.permission);
+      
+      return permissionsByRoleId;
+    }
+    // throw new HttpException("Role Id Didn't Not Found", HttpStatus.NOT_FOUND);
   }
 
   async findRoleById(roleId: number){
