@@ -35,14 +35,14 @@ export class PermissionsGuard implements CanActivate {
         // console.log("user.id ==== ", user?.id);
         const role = myUser?.role;
         // console.log("role === ", role)
-        const userRolePermissions = await this.roleService.findPermissionsByRoleId(role?.id);
-        console.log("userRolePermissions ==== ", userRolePermissions);
+        const userPermissions = await this.roleService.findPermissionsByRoleId(role?.id);
+        console.log("userPermissions ==== ", userPermissions);
         const flag = requiredPermissions.map( (reqPermission) => {
-            return userRolePermissions?.permission.find( userRolePermission =>{
-                return userRolePermission.name === reqPermission;
+            return userPermissions?.permission.find( userPermission =>{
+                return userPermission.name === reqPermission;
             }) ? true : false;
         })
-        // const flag = userRolePermission?.permission.find((p) => {
+        // const flag = userPermission?.permission.find((p) => {
         //     return p.name === requiredPermissions[0];
         // });
         console.log("flag ", flag);
@@ -50,9 +50,8 @@ export class PermissionsGuard implements CanActivate {
             return flag[0];
         }
         else{
-            throw new HttpException(`This (${requiredPermissions}) permission is not valid`, HttpStatus.NOT_FOUND)
+            throw new HttpException(`This ${requiredPermissions} permission is not valid`, HttpStatus.NOT_FOUND)
         }
-
         // return flag[0];
         // return matchRoles(roles, user.roles);
     }
