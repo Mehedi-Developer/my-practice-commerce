@@ -25,7 +25,7 @@ import { RoleModule } from 'src/role/role.module';
   ],
   controllers: [AuthController],
   providers: [
-    // Er jonno double call hoy....
+    // Er jonno double call hoy....So eita dorkar nai...
     // {
     //   provide: APP_GUARD,
     //   useClass: PermissionsGuard,

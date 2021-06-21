@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePermissionDto } from './dto/create-permission.dto';
@@ -27,12 +27,26 @@ export class PermissionService {
     // console.log({rolePermission})
     return rolePermission;
   }
+
   async create(permission: CreatePermissionDto) {
-    // console.log({permission})
-    const userPermission = await this.permissionRepository.save(permission);
-    // const userPermission = permissionRepository.create(permission);
-    // console.log({userPermission})
-    return userPermission;
+    console.log({permission})
+    try{
+      // console.log(permission)
+      // const allPermissions = await this.findAll();
+      // const existedPermission = allPermissions.find(p => p.name == permission.name);
+      const existedPermission = await this.permissionRepository.findOne({name: permission.name});
+      // console.log({existedPermission});
+      if(existedPermission){
+        throw new HttpException("This ("+permission.name+") permission is already in the list of permissions", HttpStatus.FOUND)
+      }
+      const userPermission = await this.permissionRepository.save(permission);
+      // // const userPermission = permissionRepository.create(permission);
+      // // console.log({userPermission})
+      return userPermission;
+    }
+    catch(err){
+      throw new HttpException(err.message, err.status);
+    }
   }
 
   async findAll() {
@@ -40,14 +54,41 @@ export class PermissionService {
   }
 
   async findOne(id: number) {
-    return await this.permissionRepository.findOne(id);
+    try{
+      const existedPermission = await this.permissionRepository.findOne(id);
+      if(!existedPermission){
+        throw new HttpException(`This (${id}) id is not available for permission`, HttpStatus.NOT_FOUND);
+      }
+      return existedPermission;
+    }
+    catch(err){
+      throw new HttpException(err.message, err.status)
+    }
   }
 
   async update(id: number, updatePermissionDto: UpdatePermissionDto) {
-    return await this.permissionRepository.update(id, updatePermissionDto)
+    try{
+      const existedPermission = await this.permissionRepository.findOne(id);
+      if(!existedPermission){
+        throw new HttpException(`This (${id}) id is not available for permission`, HttpStatus.NOT_FOUND);
+      }
+      return await this.permissionRepository.update(id, updatePermissionDto)
+    }
+    catch(err){
+      throw new HttpException(err.message, err.status)
+    }
   }
-
+  
   async remove(id: number) {
-    return await this.permissionRepository.delete(id);
+    try{
+      const existedPermission = await this.permissionRepository.findOne(id);
+      if(!existedPermission){
+        throw new HttpException(`This (${id}) id is not available for permission`, HttpStatus.NOT_FOUND);
+      }
+      return await this.permissionRepository.delete(id);
+    }
+    catch(err){
+      throw new HttpException(err.message, err.status)
+    }
   }
 }

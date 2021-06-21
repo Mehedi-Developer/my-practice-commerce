@@ -1,5 +1,5 @@
 export enum Permission {
-    Can_Manage_Product = "Can Manage Product",
-    Can_Response_Customer = "Can Response Customer",
-    Can_Response_Staff = "Can Response Staff",
+    Can_Response_Customer = 1, //"Can Response Customer",
+    Can_Manage_Product = 2, //"Can Manage Product",
+    Can_Response_Staff = 3, //"Can Response Staff",
 }

@@ -102,10 +102,14 @@ export class UserService {
       userObj.password = hashPassword;
 
       // const roleById = await this.roleService.findOne(roleId);
-      const roleById = await this.roleService.findRoleById(roleId);
-
+      // const roleById = await this.roleService.findRoleById(roleId);
       // console.log({roleById});
-      userObj.role = roleById;
+      // userObj.role = roleById;
+      userObj.role = await this.roleService.findOne(roleId);
+      // console.log({role: userObj.role})
+      if(!userObj.role){
+        throw new HttpException(`The roleId ${roleId} is not valid for finding user role. Please set (valid roleId) for user.`, HttpStatus.NOT_FOUND);
+      }
       // console.log(userObj)
       return this.userRepository.save(userObj);
     }
@@ -121,7 +125,8 @@ export class UserService {
                         .createQueryBuilder("user")
                         // .innerJoinAndMapMany('role.id', Role, 'role', "role.id = user.id")
                         .innerJoin("user.role", "role")
-                        .select(["user.id","user.name", "user.mobile", "user.email", "role"])
+                        .innerJoin("role.permission","permissions")
+                        .select(["user.id","user.name", "user.mobile", "user.email", "role","permissions"])
                         .orderBy("user.id")
                         .getMany();
 
@@ -135,11 +140,12 @@ export class UserService {
       const user = await this.userRepository
                          .createQueryBuilder("user")
                          .leftJoin("user.role", "role")
-                         .select(["user.id", "user.name", "user.mobile", "user.email", "role"])
+                         .leftJoin("role.permission", "permissions")
+                         .select(["user.id", "user.name", "user.mobile", "user.email", "role", "permissions"])
                          .where({id})
                          .getOne()
   
-      console.log({user})
+      // console.log({user});
       if(!user){
         throw new HttpException(`The user is not found from this id (${id})`, HttpStatus.NOT_FOUND)
       }

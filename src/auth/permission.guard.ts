@@ -17,11 +17,11 @@ export class PermissionsGuard implements CanActivate {
         
     ) {}
 
-    async canActivate(context: ExecutionContext){
-        const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY,
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const requiredPermission = this.reflector.get<number>(PERMISSIONS_KEY,
             context.getHandler(),
         );
-        if (!requiredPermissions) {
+        if (!requiredPermission) {
           return true;
         }
         const request = context.switchToHttp().getRequest();
@@ -30,27 +30,28 @@ export class PermissionsGuard implements CanActivate {
 
         // console.log("request ==== ",request);
         // console.log("user ==== ",request?.user?.user);
-        console.log("permissions ===== ",requiredPermissions);
+        console.log("permissions ===== ",requiredPermission);
         // console.log("myUser ==== ", myUser);
         // console.log("user.id ==== ", user?.id);
         const role = myUser?.role;
         // console.log("role === ", role)
-        const userPermissions = await this.roleService.findPermissionsByRoleId(role?.id);
+        const userPermissions = await this.roleService.findPermissionsByRolesId(role?.id);
         console.log("userPermissions ==== ", userPermissions);
-        const flag = requiredPermissions.map( (reqPermission) => {
-            return userPermissions?.permission.find( userPermission =>{
-                return userPermission.name === reqPermission;
-            }) ? true : false;
-        })
-        // const flag = userPermission?.permission.find((p) => {
-        //     return p.name === requiredPermissions[0];
-        // });
+        // const flag = requiredPermissions.map( (reqPermission) => {
+        //     return userPermissions?.permission.find( userPermission =>{
+        //         return userPermission.name === reqPermission;
+        //     }) ? true : false;
+        // })
+        const flag = userPermissions?.permission.some((p) => {
+            return p.id === requiredPermission;
+        });
+        // const flag = true;
         console.log("flag ", flag);
-        if(flag[0]){
-            return flag[0];
+        if(flag){
+            return flag;
         }
         else{
-            throw new HttpException(`This ${requiredPermissions} permission is not valid`, HttpStatus.NOT_FOUND)
+            throw new HttpException(`This ${requiredPermission} permission is not valid`, HttpStatus.NOT_FOUND)
         }
         // return flag[0];
         // return matchRoles(roles, user.roles);

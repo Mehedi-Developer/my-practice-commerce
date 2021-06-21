@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Permission {
@@ -6,6 +6,7 @@ export class Permission {
     id: number;
 
     @Column()
+    // @Index({ unique: true })
     name: string;
     
 }

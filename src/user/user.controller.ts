@@ -40,8 +40,9 @@ export class UserController {
   @ApiOperation({summary: "Get A User By Id"})
   @Get(':id')
   @ApiBearerAuth()
-  @UseGuards(PermissionsGuard)
-  @hasPermissions(Permission.Can_Response_Customer)
+  // @UseGuards(PermissionsGuard)
+  // @hasPermissions(Permission.Can_Response_Customer)
+  // @hasPermissions(Permission.Can_Response_Customer)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
@@ -51,7 +52,7 @@ export class UserController {
   @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(PermissionsGuard)
-  @hasPermissions("Can Manage Product")
+  // @hasPermissions()
   // @hasPermissions(Permission.Can_Response_Customer)//permissionId pass korte hobe
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);

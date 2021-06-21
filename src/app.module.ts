@@ -17,7 +17,7 @@ import { AuthModule } from './auth/auth.module';
     port: 3306,
     username: 'root',
     password: '',
-    database: 'my-practice_commerce',
+    database: 'practice_commerce',
     entities: [Permission, Role, User],
     synchronize: true,
     // logging:true
