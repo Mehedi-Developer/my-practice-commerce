@@ -25,24 +25,29 @@ export class PermissionsGuard implements CanActivate {
           return true;
         }
         const request = context.switchToHttp().getRequest();
-        const { user } = request;
-        const myUser = user?.user;
-
-        // console.log("request ==== ",request);
-        // console.log("user ==== ",request?.user?.user);
         console.log("permissions ===== ",requiredPermission);
+        // console.log("req ==== ",request);
+        const { user } = request;
+        const authUser = user?.user;
+
+        const myUser = await this.userService.findOne(authUser?.id);
+
         // console.log("myUser ==== ", myUser);
-        // console.log("user.id ==== ", user?.id);
+        
+        // // console.log("user ==== ",request?.user?.user);
+        
+        // // console.log("user.id ==== ", user?.id);
+
         const role = myUser?.role;
         // console.log("role === ", role)
-        const userPermissions = await this.roleService.findPermissionsByRolesId(role?.id);
-        console.log("userPermissions ==== ", userPermissions);
+        const userRolePermissions = await this.roleService.findPermissionsByRolesId(role?.id);
+        console.log("userPermissions ==== ", userRolePermissions);
         // const flag = requiredPermissions.map( (reqPermission) => {
         //     return userPermissions?.permission.find( userPermission =>{
         //         return userPermission.name === reqPermission;
         //     }) ? true : false;
         // })
-        const flag = userPermissions?.permission.some((p) => {
+        const flag = userRolePermissions?.permission.some((p) => {
             return p.id === requiredPermission;
         });
         // const flag = true;
@@ -53,6 +58,7 @@ export class PermissionsGuard implements CanActivate {
         else{
             throw new HttpException(`This ${requiredPermission} permission is not valid`, HttpStatus.NOT_FOUND)
         }
+        // return true;
         // return flag[0];
         // return matchRoles(roles, user.roles);
     }
