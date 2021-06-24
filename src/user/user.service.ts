@@ -197,16 +197,16 @@ export class UserService {
         throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND);
       }
       
-	  const userObj=new User();
-	  userObj.id=id;
+      const userObj = new User();
+      userObj.id = id;
       const hashPassword = upUser?.password && (await bcrypt.hashSync(upUser.password, 10));
-      
+        
       upUser?.password && (userObj.password = hashPassword);
       upUser?.roleId && (userObj.role = await this.roleService.findRoleById(upUser.roleId));
 
       upUser?.permission?.length > 0 && (userObj.permission = await this.permissionService.findRolePermissions(upUser.permission));
-	   console.log('update body',upUser);
-	   
+      console.log('update body',upUser);
+      
       console.log("userObject in user service === ", userObj);
       return this.userRepository.save(userObj);
     }

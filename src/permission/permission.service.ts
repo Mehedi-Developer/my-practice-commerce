@@ -27,7 +27,7 @@ export class PermissionService {
     // .getMany();
     // console.log({rolePermission})
     // return rolePermission;
-	return await this.permissionRepository.find({id: In(permissionIds)})
+	  return await this.permissionRepository.find({id: In(permissionIds)})
   }
 
   async create(permission: CreatePermissionDto) {
