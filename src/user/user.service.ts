@@ -22,79 +22,110 @@ export class UserService {
     private roleService: RoleService,
 
 
-  ){}
+  ) { }
 
-  async findRoleForUserId(roleId: number){
+  async findUserAllPermissions(id: number) {
+    // console.log("user id", id)
+    // const user = await this.userRepository
+    //   .createQueryBuilder("user")
+    //   .leftJoinAndSelect("user.role", "role")
+    //   .leftJoinAndSelect("user.permission", "userPermissions")
+    //   .leftJoinAndSelect("role.permission", "rolePermissions")
+    //   // .select(['userPermissions', 'rolePermissions'])
+    //   .where({ id })
+    //   .getOne();
+    const user = await this.userRepository
+      .createQueryBuilder("user")
+      .leftJoin("user.role", "role")
+      .leftJoin("role.permission", "rolePermissions")
+      .leftJoin("user.permission", "userPermissions")
+      // .select(["user.id", "user.name", "user.mobile", "user.email","userPermissions", "role", "rolePermissions"])
+      // .select(["user.id","userPermissions"])
+      .select(["user.id","userPermissions.id"])
+      .addSelect(["role.name","rolePermissions.id"])
+      .where({id})
+      .getOne()
+    // console.log('user info in user service,', user);
+    const userPermissions = [...user.permission];
+    const rolePermissions = [...user.role.permission];
+    const userRolePermissions = [...userPermissions, ...rolePermissions];
+    const allPermissions = userRolePermissions.map(p => p.id);
+    console.log({allPermissions})
+    return allPermissions;
+
+  }
+
+  async findRoleForUserId(roleId: number) {
     const user_role = await this.userRepository
-                      .createQueryBuilder("user")
-                      .innerJoin("user.role", "role")
-                      .select(["user.id","user.name", "user.mobile", "user.email", "role"])
-                      .where("role.id = "+ roleId)
-                      .getOne();
+      .createQueryBuilder("user")
+      .innerJoin("user.role", "role")
+      .select(["user.id", "user.name", "user.mobile", "user.email", "role"])
+      .where("role.id = " + roleId)
+      .getOne();
     return user_role;
   }
-  async logIn(@Body() body: LoginDto){
+  async logIn(@Body() body: LoginDto) {
     // Authentication Token Should Be Found Here, InshaAllah...
     const { email, password } = body;
     // return AuthService.validateUser(body.email, body.password)
     console.log('body: ' + body);
-    
+
     // return this.authService.validateUser(email, password)
     // return result;
   }
-  
-  async findUserByEmail(email: string){
-    const userByEmail =  await this.userRepository
-    .createQueryBuilder("user")
-    .innerJoin("user.role", "role")
-    // .select(["user"])
-    .select(["user","role"])
-    .where({email})
-    // .orWhere("user.mobile = :mobile ", {mobile})
-    .getOne();
+
+  async findUserByEmail(email: string) {
+    const userByEmail = await this.userRepository
+      .createQueryBuilder("user")
+      .innerJoin("user.role", "role")
+      // .select(["user"])
+      .select(["user", "role"])
+      .where({ email })
+      // .orWhere("user.mobile = :mobile ", {mobile})
+      .getOne();
     return userByEmail;
   }
 
-  async signUp( user: CreateUserDto) {
-    try{
+  async signUp(user: CreateUserDto) {
+    try {
       // console.log({user});
       const saltRound = 10;
       // const hashPassword = await bcrypt.hashSync( user.password, 10);
-      const hashPassword = await bcrypt.hashSync( user.password, saltRound);
+      const hashPassword = await bcrypt.hashSync(user.password, saltRound);
       // console.log(hashPassword);
-      const { name, email, mobile, roleId} = user;
+      const { name, email, mobile, roleId, permission } = user;
       const existedEmail = await this.userRepository
-                                .createQueryBuilder("user")
-                                // .select(["user"])
-                                .select(["user.email"])
-                                .where({email})
-                                // .orWhere("user.mobile = :mobile ", {mobile})
-                                .getOne();
+        .createQueryBuilder("user")
+        // .select(["user"])
+        .select(["user.email"])
+        .where({ email })
+        // .orWhere("user.mobile = :mobile ", {mobile})
+        .getOne();
 
       const existedMobile = await this.userRepository
-                                .createQueryBuilder("user")
-                                // .select(["user"])
-                                .select(["user.mobile"])
-                                .where("user.mobile = :mobile ", {mobile})
-                                // .orWhere("user.mobile = :mobile ", {mobile})
-                                .getOne();
+        .createQueryBuilder("user")
+        // .select(["user"])
+        .select(["user.mobile"])
+        .where("user.mobile = :mobile ", { mobile })
+        // .orWhere("user.mobile = :mobile ", {mobile})
+        .getOne();
 
       // console.log(existedEmail);
       // console.log(existedMobile);
-      if(existedEmail || existedMobile){
-        if(existedEmail && existedMobile){
+      if (existedEmail || existedMobile) {
+        if (existedEmail && existedMobile) {
           throw new HttpException(`Both The email (${existedEmail.email}) and password (${existedMobile.mobile}) are already existed`, HttpStatus.FOUND);
         }
-        else if(existedEmail){
+        else if (existedEmail) {
           throw new HttpException(`This email (${email}) is already existed`, HttpStatus.FOUND);
         }
-        else{
+        else {
           throw new HttpException(`This mobile (${mobile}) is already existed`, HttpStatus.FOUND);
-        } 
+        }
       }
 
       // console.log('reached here');
-      
+
       const userObj = new User();
       userObj.name = name;
       userObj.email = email;
@@ -106,29 +137,31 @@ export class UserService {
       // console.log({roleById});
       // userObj.role = roleById;
       userObj.role = await this.roleService.findOne(roleId);
+      permission.length > 0 && (userObj.permission = await this.permissionService.findRolePermissions(permission));
       // console.log({role: userObj.role})
-      if(!userObj.role){
+      if (!userObj.role) {
         throw new HttpException(`The roleId ${roleId} is not valid for finding user role. Please set (valid roleId) for user.`, HttpStatus.NOT_FOUND);
       }
-      // console.log(userObj)
+      console.log(userObj)
       return this.userRepository.save(userObj);
     }
-    catch(err){
+    catch (err) {
       // console.error('error occurred',err);
-      
+
       throw new HttpException(err.message, err.status)
     }
   }
 
   async findAll() {
     const users = await this.userRepository
-                        .createQueryBuilder("user")
-                        // .innerJoinAndMapMany('role.id', Role, 'role', "role.id = user.id")
-                        .innerJoin("user.role", "role")
-                        .innerJoin("role.permission","permissions")
-                        .select(["user.id","user.name", "user.mobile", "user.email", "role","permissions"])
-                        .orderBy("user.id")
-                        .getMany();
+      .createQueryBuilder("user")
+      // .innerJoinAndMapMany('role.id', Role, 'role', "role.id = user.id")
+      .leftJoin("user.role", "role")
+      .leftJoin("user.permission", "userPermissions")
+      .leftJoin("role.permission", "permissions")
+      .select(["user.id", "user.name", "user.mobile", "user.email", "userPermissions", "role", "permissions"])
+      .orderBy("user.id")
+      .getMany();
 
     // console.log(users)
     // return this.userRepository.find();
@@ -136,66 +169,80 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    try{
+    // console.log('userid in user service find one=',id);
+    
+    try {
       const user = await this.userRepository
                          .createQueryBuilder("user")
                          .leftJoin("user.role", "role")
-                         .leftJoin("role.permission", "permissions")
-                         .select(["user.id", "user.name", "user.mobile", "user.email", "role", "permissions"])
+                         .leftJoin("role.permission", "rolePermissions")
+                         .leftJoin("user.permission", "userPermissions")
+                         .select(["user.id", "user.name", "user.mobile", "user.email","userPermissions", "role", "rolePermissions"])
                          .where({id})
                          .getOne()
-  
+      // const user = await this.userRepository
+      //   .createQueryBuilder("user")
+      //   .leftJoinAndSelect("user.role", "role")
+      //   .leftJoinAndSelect("role.permission", "rpermissions")
+      //   .leftJoinAndSelect("user.permission", "upermissions")
+      //   .where("user.id = "+ id)
+      //   .getOne()
+
       // console.log({user});
-      if(!user){
+      if (!user) {
         throw new HttpException(`The user is not found from this id (${id})`, HttpStatus.NOT_FOUND)
       }
       return user;
     }
-    catch(err){
+    catch (err) {
       throw new HttpException(err.message, err.status);
     }
     // return this.userRepository.findOne(id);
   }
 
   async update(id: number, upUser: UpdateUserDto) {
-    try{
+    console.log("come in update === id -> ",id)
+    try {
       const user = await this.userRepository.findOne(id);
-      if(!user){
+      if (!user) {
         throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND);
       }
-
-      const userObj = new User();
-      upUser.name && (userObj.name = upUser.name);
-      upUser.email && (userObj.email = upUser.email);
-
-      const hashPassword = upUser.password && ( await bcrypt.hashSync( upUser.password, 10));
-
-      upUser.password && (userObj.password = hashPassword);
-      upUser.roleId && (userObj.role =  await this.roleService.findRoleById(id));
       
+      const userObj = new User();
+      upUser?.name && (userObj.name = upUser.name);
+      upUser?.email && (userObj.email = upUser.email);
+      
+      const hashPassword = upUser?.password && (await bcrypt.hashSync(upUser.password, 10));
+      
+      upUser?.password && (userObj.password = hashPassword);
+      upUser?.roleId && (userObj.role = await this.roleService.findRoleById(upUser.roleId));
+      // console.log(upUser)
+      upUser?.permission?.length > 0 && (userObj.permission = await this.permissionService.findRolePermissions(upUser.permission));
+      console.log("userObject in user service === ", userObj);
       // string (password) ==> $2b$10$TfDBFQvPZ2MdngYRqNrsK.vNSZTrIU8BRgaiyP.cyEITv0nPCHSuu
       // 12345  (password) ==> $2b$10$waQLnVT3SsK0cGY9uRz6huqMb0JPRtnvwA9Znre0K1AIppyl.S6Xe
+      // if(user)
       return this.userRepository.update(id, userObj);
     }
-    catch(err){
+    catch (err) {
       throw new HttpException(err.message, err.status);
     }
   }
 
   async remove(id: number) {
-    try{
+    try {
       const user = await this.userRepository
-                         .createQueryBuilder("user")
-                         .select(["user"])
-                         .where({id})
-                         .getOne();
+        .createQueryBuilder("user")
+        .select(["user"])
+        .where({ id })
+        .getOne();
 
-      if(!user){
+      if (!user) {
         throw new HttpException(`The user is not found from this id (${id}) for deleting`, HttpStatus.NOT_FOUND)
       }
       return this.userRepository.delete(id);
     }
-    catch(err){
+    catch (err) {
       throw new HttpException(err.message, err.status);
     }
   }

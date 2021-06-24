@@ -10,11 +10,11 @@ import { Permission } from 'src/auth/permission.enum';
 // import { Observable } from 'rxjs';
 // import { User } from './entities/user.entity';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  
   @ApiTags("User")
   @ApiOperation({summary: "User Sign Up"})
   @Post()
@@ -30,7 +30,7 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(PermissionsGuard)
   // Local E JwtAuthGuard Use Korle Obshsoi PermissionsGuard Er Por Use Korte Hobe Onnothay Global E Korle Problem Nai
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @hasPermissions(Permission.Can_Manage_Product)
   findAll() {
     return this.userService.findAll();
@@ -40,8 +40,10 @@ export class UserController {
   @ApiOperation({summary: "Get A User By Id"})
   @Get(':id')
   @ApiBearerAuth()
-  // @UseGuards(PermissionsGuard)
-  // @hasPermissions(Permission.Can_Response_Customer)
+  @UseGuards(PermissionsGuard)
+  // Local E JwtAuthGuard Use Korle Obshsoi PermissionsGuard Er Por Use Korte Hobe Onnothay Global E Korle Problem Nai
+  @UseGuards(JwtAuthGuard)
+  @hasPermissions(8)
   // @hasPermissions(Permission.Can_Response_Customer)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
@@ -52,7 +54,8 @@ export class UserController {
   @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(PermissionsGuard)
-  // @hasPermissions()
+  @hasPermissions(4)
+  @UseGuards(JwtAuthGuard)
   // @hasPermissions(Permission.Can_Response_Customer)//permissionId pass korte hobe
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
@@ -63,5 +66,16 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+ 
+  @UseGuards(PermissionsGuard)
+  @hasPermissions(9)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('/hello/me')
+  hello(){
+    console.log('come here ');
+    return 'hello nest js world';
   }
 }

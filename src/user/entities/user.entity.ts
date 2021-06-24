@@ -1,5 +1,6 @@
+import { Permission } from "src/permission/entities/permission.entity";
 import { Role } from "src/role/entities/role.entity";
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -20,14 +21,13 @@ export class User {
     @Column()
     password: string;
 
-    // @OneToOne(() => Role)
-    // @JoinColumn({ name: "user_role"})
-    // role: Role;
     @ManyToOne(() => Role)
     @JoinColumn({ name: "user_role"})
     role: Role;
-    // @ManyToMany(() => Permission, {eager: true})
-    // @JoinTable({name: "user_permission"})
-    // permission: Permission[];
+
+    @ManyToMany(() => Permission, {eager: true})
+    // @ManyToMany(() => Permission, per=>per.users, {eager: true})
+    @JoinTable({name: "user_permission"})
+    permission: Permission[];
 
 }

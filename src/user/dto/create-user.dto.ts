@@ -1,8 +1,10 @@
 import { Optional } from "@nestjs/common";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, PickType } from "@nestjs/swagger";
 import { IsArray, IsEmail, IsMobilePhone, IsNumber, IsOptional, IsPhoneNumber, IsString, Length } from "class-validator";
+import { CreatePermissionDto } from "src/permission/dto/create-permission.dto";
+import { Permission } from "src/permission/entities/permission.entity";
 
-export class CreateUserDto {
+export class CreateUserDto extends PickType(CreatePermissionDto, ["name"] as const){
 
     @ApiPropertyOptional()
     @IsOptional()
@@ -35,5 +37,10 @@ export class CreateUserDto {
     @IsNumber()
     // @ApiProperty({type: Number})
     roleId: number;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsArray({message: "This is will be array element for permission id"})
+    permission: Permission[];
 }
 

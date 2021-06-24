@@ -18,13 +18,14 @@ export class PermissionService {
   ){}
 
   async findRolePermissions(permission: any){
+    console.log(...permission)
     const rolePermission = await this.permissionRepository
     .createQueryBuilder("permission")
     .select(["permission"])
     .where("permission.id IN (:...permission)", { permission })
     .orderBy("permission.id")
     .getMany();
-    // console.log({rolePermission})
+    console.log({rolePermission})
     return rolePermission;
   }
 
