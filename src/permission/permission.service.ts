@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { Permission } from './entities/permission.entity';
@@ -17,16 +17,17 @@ export class PermissionService {
 
   ){}
 
-  async findRolePermissions(permission: any){
-    console.log(...permission)
-    const rolePermission = await this.permissionRepository
-    .createQueryBuilder("permission")
-    .select(["permission"])
-    .where("permission.id IN (:...permission)", { permission })
-    .orderBy("permission.id")
-    .getMany();
-    console.log({rolePermission})
-    return rolePermission;
+  async findRolePermissions(permissionIds: number[]){
+    // console.log(...permission)
+    // const rolePermission = await this.permissionRepository
+    // .createQueryBuilder("permission")
+    // .select(["permission"])
+    // .where("permission.id IN (:...permission)", { permission })
+    // .orderBy("permission.id")
+    // .getMany();
+    // console.log({rolePermission})
+    // return rolePermission;
+	return await this.permissionRepository.find({id: In(permissionIds)})
   }
 
   async create(permission: CreatePermissionDto) {

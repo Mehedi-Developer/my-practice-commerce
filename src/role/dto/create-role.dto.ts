@@ -12,5 +12,5 @@ export class CreateRoleDto {
     @ApiPropertyOptional()
     @IsOptional()
     @IsArray({message: "This is will be array element for permission id"})
-    permission: Permission[];
+    permission: number[];
 }

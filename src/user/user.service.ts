@@ -25,22 +25,11 @@ export class UserService {
   ) { }
 
   async findUserAllPermissions(id: number) {
-    // console.log("user id", id)
-    // const user = await this.userRepository
-    //   .createQueryBuilder("user")
-    //   .leftJoinAndSelect("user.role", "role")
-    //   .leftJoinAndSelect("user.permission", "userPermissions")
-    //   .leftJoinAndSelect("role.permission", "rolePermissions")
-    //   // .select(['userPermissions', 'rolePermissions'])
-    //   .where({ id })
-    //   .getOne();
     const user = await this.userRepository
       .createQueryBuilder("user")
       .leftJoin("user.role", "role")
       .leftJoin("role.permission", "rolePermissions")
       .leftJoin("user.permission", "userPermissions")
-      // .select(["user.id", "user.name", "user.mobile", "user.email","userPermissions", "role", "rolePermissions"])
-      // .select(["user.id","userPermissions"])
       .select(["user.id","userPermissions.id"])
       .addSelect(["role.name","rolePermissions.id"])
       .where({id})
@@ -208,21 +197,18 @@ export class UserService {
         throw new HttpException(`The user is not found from this id (${id}) for updating`, HttpStatus.NOT_FOUND);
       }
       
-      const userObj = new User();
-      upUser?.name && (userObj.name = upUser.name);
-      upUser?.email && (userObj.email = upUser.email);
-      
+	  const userObj=new User();
+	  userObj.id=id;
       const hashPassword = upUser?.password && (await bcrypt.hashSync(upUser.password, 10));
       
       upUser?.password && (userObj.password = hashPassword);
       upUser?.roleId && (userObj.role = await this.roleService.findRoleById(upUser.roleId));
-      // console.log(upUser)
+
       upUser?.permission?.length > 0 && (userObj.permission = await this.permissionService.findRolePermissions(upUser.permission));
+	   console.log('update body',upUser);
+	   
       console.log("userObject in user service === ", userObj);
-      // string (password) ==> $2b$10$TfDBFQvPZ2MdngYRqNrsK.vNSZTrIU8BRgaiyP.cyEITv0nPCHSuu
-      // 12345  (password) ==> $2b$10$waQLnVT3SsK0cGY9uRz6huqMb0JPRtnvwA9Znre0K1AIppyl.S6Xe
-      // if(user)
-      return this.userRepository.update(id, userObj);
+      return this.userRepository.save(userObj);
     }
     catch (err) {
       throw new HttpException(err.message, err.status);

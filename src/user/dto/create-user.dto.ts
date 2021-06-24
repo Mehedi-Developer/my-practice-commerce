@@ -41,6 +41,6 @@ export class CreateUserDto extends PickType(CreatePermissionDto, ["name"] as con
     @ApiPropertyOptional()
     @IsOptional()
     @IsArray({message: "This is will be array element for permission id"})
-    permission: Permission[];
+    permission: number[];
 }
 
